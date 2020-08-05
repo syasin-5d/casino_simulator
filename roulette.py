@@ -8,7 +8,7 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument("--mode", "-m")
+    parser.add_argument("--mode", "-m", help='[martingale,cocomo,1235,1236]')
     return parser.parse_args()
 
 
