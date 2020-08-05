@@ -8,7 +8,9 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument("--mode", "-m", help="[martingale,cocomo,1235,1236]")
+    parser.add_argument("--mode",
+                        "-m",
+                        help="[martingale,cocomo,1235,1236,2in1]")
     parser.add_argument("--amount",
                         "-a",
                         help="initial player's amount",
