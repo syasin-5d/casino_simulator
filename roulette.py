@@ -62,6 +62,7 @@ class Simulation:
         self.mode = mode
         self.set_payback_rate(mode)
         self.win_streak = 0  # be negative if lose_streak
+        self.twoinone = []
         if mode == "1235":
             self.rotation = [1, 2, 3, 5]
         elif mode == "1236":
@@ -69,7 +70,7 @@ class Simulation:
         self.bet = self.init_bet
 
     def set_payback_rate(self, mode):
-        if mode == "martingale" or mode == "1235" or mode == "1236":
+        if mode == "martingale" or mode == "1235" or mode == "1236" or mode == "2in1":
             self.payback_rate = 2
         elif mode == "cocomo":
             self.payback_rate = 3
@@ -96,7 +97,8 @@ class Simulation:
         if self.win_streak == 0:
             self.bet == self.init_bet
         elif 0 < self.win_streak:
-            if self.mode == "martingale" or self.mode == "cocomo":
+            # win
+            if self.mode == "martingale" or self.mode == "cocomo" or self.mode == "2in1":
                 self.bet = self.init_bet
             elif self.mode == "1235" or self.mode == "1236":
                 self.bet = self.rotation[-1] if len(
@@ -109,6 +111,16 @@ class Simulation:
             elif self.mode == "cocomo":
                 self.bet = fibonacci(-self.win_streak)
             elif self.mode == "1235" or self.mode == "1236":
+                self.bet = self.init_bet
+            elif self.mode == "2in1":
+                if 2 <= len(self.twoinone):
+                    self.twoinone.append(1)
+                else:
+                    self.twoinone.append(self.bet)
+        if self.mode == "2in1":
+            if 2 <= len(self.twoinone):
+                self.bet = self.twoinone[0] + self.twoinone[-1]
+            else:
                 self.bet = self.init_bet
 
     def experiment(self):
