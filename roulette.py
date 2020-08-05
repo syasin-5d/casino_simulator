@@ -3,6 +3,13 @@ import dataclasses
 import matplotlib.pyplot as plt
 from typing import List
 from functools import lru_cache
+import argparse
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument("--mode", "-m")
+    return parser.parse_args()
 
 
 @lru_cache(maxsize=None)
@@ -46,6 +53,7 @@ class Simulation:
         self.n = 1  # for cocomo
         self.mode = mode
         self.set_payback_rate(mode)
+        self.win_streak = 0  # be negative if lose_streak
         if mode == "1235":
             self.rotation = [1, 2, 3, 5]
         elif mode == "1236":
@@ -65,72 +73,48 @@ class Simulation:
     def record(self, bet, payback):
         self.player.amount = self.player.amount - bet + payback
         self.player.history.append(self.player.amount)
+        if not payback:
+            self.player.lose += 1
+            self.win_streak = 0 if 0 < self.win_streak else self.win_streak
+            self.win_streak -= 1
+        else:
+            self.player.win += 1
+            self.win_streak = 0 if self.win_streak < 0 else self.win_streak
+            self.win_streak += 1
+        self.player.max_win = self.win_streak if self.player.max_win < self.win_streak else self.player.max_win
+        self.player.max_lose = self.win_streak if self.player.max_lose > self.win_streak else self.player.max_lose
 
-    def set_bet(self, win_streak):
-        if win_streak == 0:
+    def set_bet(self):
+        if self.win_streak == 0:
             self.bet == self.init_bet
-        elif 0 < win_streak:
+        elif 0 < self.win_streak:
             if self.mode == "martingale" or self.mode == "cocomo":
                 self.bet = self.init_bet
             elif self.mode == "1235" or self.mode == "1236":
                 self.bet = self.rotation[-1] if len(
-                    self.rotation) <= win_streak else self.rotation[win_streak
-                                                                    - 1]
+                    self.rotation) <= self.win_streak else self.rotation[
+                        self.win_streak - 1]
         else:
             # lose
             if self.mode == "martingale":
                 self.bet *= 2
             elif self.mode == "cocomo":
-                self.bet = fibonacci(-win_streak)
+                self.bet = fibonacci(-self.win_streak)
             elif self.mode == "1235" or self.mode == "1236":
                 self.bet = self.init_bet
 
     def experiment(self):
-        win_streak = 0  # be negative if lose_streak
-
         for _ in range(self.ntries):
-            self.set_bet(win_streak)
+            self.set_bet()
             payback = self.tries(self.bet, self.payback_rate)
             self.record(self.bet, payback)
-            if not payback:
-                self.player.lose += 1
-                win_streak = 0 if 0 < win_streak else win_streak
-                win_streak -= 1
-            else:
-                self.player.win += 1
-                win_streak = 0 if win_streak < 0 else win_streak
-                win_streak += 1
-            self.player.max_win = win_streak if self.player.max_win < win_streak else self.player.max_win
-            self.player.max_lose = win_streak if self.player.max_lose > win_streak else self.player.max_lose
-
-    def martingale(self):
-        bet = self.init_bet
-        payback_rate = 2
-        for _ in range(self.ntries):
-            payback = self.tries(bet, payback_rate)
-            self.record(bet, payback)
-            if not payback:
-                bet *= 2
-            else:
-                bet = self.init_bet
-
-    def cocomo(self):
-        n = 1
-        bet = fibonacci(1)
-        payback_rate = 3
-        for _ in range(self.ntries):
-            payback = self.tries(bet, payback_rate)
-            self.record(bet, payback)
-            if not payback:
-                n += 1
-            else:
-                n = 1
 
 
 def main():
+    args = parse_args()
     player = Player(amount=0)
     roulette = Roulette()
-    simulation = Simulation(player, roulette, 100, "1235", 1)
+    simulation = Simulation(player, roulette, 100, args.mode, 1)
     simulation.experiment()
     print(player)
 
