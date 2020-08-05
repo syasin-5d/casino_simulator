@@ -8,7 +8,15 @@ import argparse
 
 def parse_args():
     parser = argparse.ArgumentParser(description='')
-    parser.add_argument("--mode", "-m", help='[martingale,cocomo,1235,1236]')
+    parser.add_argument("--mode", "-m", help="[martingale,cocomo,1235,1236]")
+    parser.add_argument("--amount",
+                        "-a",
+                        help="initial player's amount",
+                        default=0)
+    parser.add_argument("--ntries",
+                        "-n",
+                        help="number of tries to experiment",
+                        default=100)
     return parser.parse_args()
 
 
@@ -58,7 +66,7 @@ class Simulation:
             self.rotation = [1, 2, 3, 5]
         elif mode == "1236":
             self.rotation = [1, 2, 3, 6]
-        self.bet = 0
+        self.bet = self.init_bet
 
     def set_payback_rate(self, mode):
         if mode == "martingale" or mode == "1235" or mode == "1236":
@@ -112,9 +120,9 @@ class Simulation:
 
 def main():
     args = parse_args()
-    player = Player(amount=0)
+    player = Player(amount=args.amount)
     roulette = Roulette()
-    simulation = Simulation(player, roulette, 100, args.mode, 1)
+    simulation = Simulation(player, roulette, args.ntries, args.mode, 1)
     simulation.experiment()
     print(player)
 
