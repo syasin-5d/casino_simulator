@@ -67,48 +67,39 @@ class Simulation:
         self.player.history.append(self.player.amount)
 
     def set_bet(self, win_streak):
-        if 0 < win_streak:
-        if self.mode == "martingale" or self.mode == "cocomo":
-            bet = self.init_bet
+        if win_streak == 0:
+            self.bet == self.init_bet
+        elif 0 < win_streak:
+            if self.mode == "martingale" or self.mode == "cocomo":
+                self.bet = self.init_bet
+            elif self.mode == "1235" or self.mode == "1236":
+                self.bet = self.rotation[-1] if len(
+                    self.rotation) <= win_streak else self.rotation[win_streak
+                                                                    - 1]
         else:
-            bet = self.rotation[-1] if len(
-                self.rotation) <= win_streak else self.rotation[win_streak - 1]
-
-        # lose
-        if self.mode == "martingale":
-            bet *= 2
-        elif self.mode == "cocomo":
-            bet = fibonacci(-win_streak + 1)
-        elif self.mode == "1235":
-            bet = self.init_bet
+            # lose
+            if self.mode == "martingale":
+                self.bet *= 2
+            elif self.mode == "cocomo":
+                self.bet = fibonacci(-win_streak)
+            elif self.mode == "1235" or self.mode == "1236":
+                self.bet = self.init_bet
 
     def experiment(self):
-        bet = self.init_bet
         win_streak = 0  # be negative if lose_streak
 
         for _ in range(self.ntries):
-            payback = self.tries(bet, self.payback_rate)
-            self.record(bet, payback)
+            self.set_bet(win_streak)
+            payback = self.tries(self.bet, self.payback_rate)
+            self.record(self.bet, payback)
             if not payback:
                 self.player.lose += 1
                 win_streak = 0 if 0 < win_streak else win_streak
                 win_streak -= 1
-                if self.mode == "martingale":
-                    bet *= 2
-                elif self.mode == "cocomo":
-                    bet = fibonacci(-win_streak + 1)
-                elif self.mode == "1235":
-                    bet = self.init_bet
             else:
                 self.player.win += 1
                 win_streak = 0 if win_streak < 0 else win_streak
                 win_streak += 1
-                if self.mode == "martingale" or self.mode == "cocomo":
-                    bet = self.init_bet
-                else:
-                    bet = rotation[-1] if len(
-                        rotation) <= win_streak else rotation[win_streak - 1]
-                n = 1
             self.player.max_win = win_streak if self.player.max_win < win_streak else self.player.max_win
             self.player.max_lose = win_streak if self.player.max_lose > win_streak else self.player.max_lose
 
@@ -139,7 +130,7 @@ class Simulation:
 def main():
     player = Player(amount=0)
     roulette = Roulette()
-    simulation = Simulation(player, roulette, 100, "cocomo", 1)
+    simulation = Simulation(player, roulette, 100, "1235", 1)
     simulation.experiment()
     print(player)
 
