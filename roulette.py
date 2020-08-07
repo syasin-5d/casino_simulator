@@ -10,7 +10,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("--mode",
                         "-m",
-                        help="[martingale,cocomo,1235,1236,2in1]")
+                        help="[martingale,cocomo,1235,1326,2in1]")
     parser.add_argument("--amount",
                         "-a",
                         help="initial player's amount",
@@ -67,12 +67,12 @@ class Simulation:
         self.twoinone = []
         if mode == "1235":
             self.rotation = [1, 2, 3, 5]
-        elif mode == "1236":
-            self.rotation = [1, 2, 3, 6]
+        elif mode == "1326":
+            self.rotation = [1, 3, 2, 6]
         self.bet = self.init_bet
 
     def set_payback_rate(self, mode):
-        if mode == "martingale" or mode == "1235" or mode == "1236" or mode == "2in1":
+        if mode == "martingale" or mode == "1235" or mode == "1326" or mode == "2in1":
             self.payback_rate = 2
         elif mode == "cocomo":
             self.payback_rate = 3
@@ -102,7 +102,7 @@ class Simulation:
             # win
             if self.mode == "martingale" or self.mode == "cocomo" or self.mode == "2in1":
                 self.bet = self.init_bet
-            elif self.mode == "1235" or self.mode == "1236":
+            elif self.mode == "1235" or self.mode == "1326":
                 self.bet = self.rotation[-1] if len(
                     self.rotation) <= self.win_streak else self.rotation[
                         self.win_streak - 1]
@@ -112,7 +112,7 @@ class Simulation:
                 self.bet *= 2
             elif self.mode == "cocomo":
                 self.bet = fibonacci(-self.win_streak)
-            elif self.mode == "1235" or self.mode == "1236":
+            elif self.mode == "1235" or self.mode == "1326":
                 self.bet = self.init_bet
             elif self.mode == "2in1":
                 if 2 <= len(self.twoinone):
