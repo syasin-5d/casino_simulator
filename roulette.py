@@ -10,14 +10,17 @@ def parse_args():
     parser = argparse.ArgumentParser(description='')
     parser.add_argument("--mode",
                         "-m",
-                        help="[martingale,cocomo,1235,1326,2in1]")
+                        help="[martingale,cocomo,1235,1326,2in1]",
+                        type=str)
     parser.add_argument("--amount",
                         "-a",
                         help="initial player's amount",
+                        type=int,
                         default=0)
     parser.add_argument("--ntries",
                         "-n",
                         help="number of tries to experiment",
+                        type=int,
                         default=100)
     parser.add_argument("--output",
                         "-o",
