@@ -19,6 +19,11 @@ def parse_args():
                         "-n",
                         help="number of tries to experiment",
                         default=100)
+    parser.add_argument("--output",
+                        "-o",
+                        help="plot with matplotlib",
+                        type=str,
+                        default="")
     return parser.parse_args()
 
 
@@ -139,6 +144,10 @@ def main():
     simulation = Simulation(player, roulette, args.ntries, args.mode, 1)
     simulation.experiment()
     print(player)
+    if args.output:
+        plt.plot(player.history)
+        plt.savefig(args.output)
+        print(f"saved as {args.output}")
 
 
 if __name__ == "__main__":
